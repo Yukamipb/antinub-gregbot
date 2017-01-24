@@ -13,11 +13,6 @@ from slixmpp import ClientXMPP
 from core.config import JABBER
 
 
-def setup(bot):
-    'Adds the cog to the provided discord bot'
-    bot.add_cog(Jabber(bot, JABBER))
-
-
 class Jabber:
     '''A cog which connects to config defined xmpp servers and relays messages
     from certain senders to the config defined channel'''
@@ -102,3 +97,8 @@ class XmppRelay(ClientXMPP):
                 self.logger.info('Ignored message from %s', sender)
         else:
             self.logger.info('Ignored message of type %s', msg['type'])
+
+
+def setup(bot):
+    'Adds the cog to the provided discord bot'
+    bot.add_cog(Jabber(bot, JABBER))

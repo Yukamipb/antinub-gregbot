@@ -10,11 +10,6 @@ import discord.ext.commands as commands
 import core.checks as checks
 
 
-def setup(bot):
-    'Adds the cog to the provided discord bot'
-    bot.add_cog(Timerboard(bot, 'fleetlist.json'))
-
-
 class Timerboard:
     '''A cog defining commands for controlling the
     bot's timerboard functions'''
@@ -177,3 +172,8 @@ class Timerboard:
 
         error = "Enter a valid fleet number to reset or * to reset all"
         await self.bot.say(error)
+
+
+def setup(bot):
+    'Adds the cog to the provided discord bot'
+    bot.add_cog(Timerboard(bot, 'fleetlist.json'))

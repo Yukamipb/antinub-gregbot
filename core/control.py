@@ -16,11 +16,6 @@ import core.checks as checks
 from core.util import paginate, notify_admins
 
 
-def setup(bot):
-    'Adds the cog to the provided discord bot'
-    bot.add_cog(Control(bot))
-
-
 class Control:
     '''A cog defining commands for controlling the
     bot's operation such as stopping the bot'''
@@ -259,3 +254,8 @@ class Control:
                                    .format(plain_name))
         else:
             await self.bot.say('You must specify an extension to reload')
+
+
+def setup(bot):
+    'Adds the cog to the provided discord bot'
+    bot.add_cog(Control(bot))

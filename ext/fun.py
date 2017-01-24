@@ -13,11 +13,6 @@ import discord.ext.commands as commands
 import core.checks as checks
 
 
-def setup(bot):
-    'Adds the cog to the provided discord bot'
-    bot.add_cog(Fun(bot, 'memes.json'))
-
-
 class Fun:
     '''A cog defining meme commands'''
     def __init__(self, bot, fname):
@@ -161,3 +156,8 @@ class Fun:
             count += 1
         await self.bot.say(response)
         self.logger.info('User posted a lmgtfy to the chat.')
+
+
+def setup(bot):
+    'Adds the cog to the provided discord bot'
+    bot.add_cog(Fun(bot, 'memes.json'))
