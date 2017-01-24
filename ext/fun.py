@@ -10,7 +10,7 @@ from os.path import isfile
 
 import discord.ext.commands as commands
 
-import utils.checks as checks
+import core.checks as checks
 
 
 def setup(bot):

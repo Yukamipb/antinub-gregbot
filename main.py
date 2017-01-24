@@ -9,7 +9,7 @@ import os
 
 import discord.ext.commands as commands
 
-import config
+import core.config as config
 
 
 def _configure_logging():
@@ -60,7 +60,7 @@ def _load_extensions(bot):
     'Load the startup extensions'
     logger = logging.getLogger(__name__)
     logger.info('Loading extensions')
-    bot.load_extension('utils.control')
+    bot.load_extension('core.control')
     logger.info('Successfully loaded extension: control')
 
     for ext in config.STARTUP_EXTENSIONS:
@@ -82,10 +82,11 @@ if __name__ == '__main__':
     BOT = commands.Bot(commands.when_mentioned_or(*config.COMMAND_PREFIXES),
                        pm_help=True)
 
-    @BOT.listen()
-    async def on_ready():
-        'Note in log when the bot is ready'
+    async def finish_loading():
+        'When bot is ready log and load extensions'
+        await BOT.wait_until_ready()
         LOGGER.info('Logged in as %s, id: %s', BOT.user.name, BOT.user.id)
         _load_extensions(BOT)
+    BOT.loop.create_task(finish_loading())
 
     BOT.run(config.TOKEN)

@@ -10,7 +10,7 @@ import logging
 
 from slixmpp import ClientXMPP
 
-from config import JABBER
+from core.config import JABBER
 
 
 def setup(bot):

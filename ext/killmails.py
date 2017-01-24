@@ -13,8 +13,8 @@ from traceback import format_exception
 from aiohttp import ClientResponseError, ClientSession, TCPConnector
 from discord.embeds import Embed
 
-from config import KILLMAILS
-from utils.control import notify_admins, paginate
+from core.config import KILLMAILS
+from core.util import notify_admins, paginate
 
 
 class Killmails:
