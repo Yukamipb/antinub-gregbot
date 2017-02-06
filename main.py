@@ -4,70 +4,26 @@ Entry point for antinub-gregbot project.
 Configures logging, loads startup extensions and starts the bot.
 '''
 import logging
+import logging.config
 from logging.handlers import RotatingFileHandler
-import os
 
 import discord.ext.commands as commands
 
-import core.config as config
+from core.configbuilder import ConfigJSON
 
 
-def _configure_logging():
-    'Adds file and console handlers and formats the root logger'
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG if config.DEBUG else logging.INFO)
-
-    fmt = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    file_dh = RotatingFileHandler(
-        os.path.join(config.LOG_PATH, 'debug.log'),
-        maxBytes=1000000,
-        backupCount=5,
-        encoding='utf-8')
-    file_dh.setLevel(logging.DEBUG)
-    file_dh.setFormatter(fmt)
-    file_dh.doRollover()
-    root_logger.addHandler(file_dh)
-
-    file_ih = RotatingFileHandler(
-        os.path.join(config.LOG_PATH, 'info.log'),
-        maxBytes=1000000,
-        backupCount=5,
-        encoding='utf-8')
-    file_ih.setLevel(logging.INFO)
-    file_ih.setFormatter(fmt)
-    file_ih.doRollover()
-    root_logger.addHandler(file_ih)
-
-    file_eh = RotatingFileHandler(
-        os.path.join(config.LOG_PATH, 'error.log'),
-        maxBytes=100000,
-        backupCount=5,
-        encoding='utf-8')
-    file_eh.setLevel(logging.ERROR)
-    file_eh.setFormatter(fmt)
-    file_eh.doRollover()
-    root_logger.addHandler(file_eh)
-
-    console_h = logging.StreamHandler()
-    console_h.setLevel(logging.DEBUG)
-    console_h.setFormatter(fmt)
-    root_logger.addHandler(console_h)
-
-
-def _load_extensions(bot):
+def load_extensions(bot):
     'Load the startup extensions'
     logger = logging.getLogger(__name__)
     logger.info('Loading extensions')
     bot.load_extension('core.control')
     logger.info('Successfully loaded extension: control')
 
-    for ext in config.STARTUP_EXTENSIONS:
-        ext_string = 'ext.{}'.format(ext)
-        if ext_string not in bot.extensions:
+    for ext in bot.config['-bot-']['startup_extensions']:
+        libname = 'ext.{}'.format(ext)
+        if libname not in bot.extensions:
             try:
-                bot.load_extension(ext_string)
+                bot.load_extension(libname)
                 logger.info('Successfully loaded extension: %s', ext)
             except ImportError as exc:
                 logger.warning('Failed to load extension: %s - %s', ext, exc)
@@ -75,18 +31,38 @@ def _load_extensions(bot):
             logger.warning('Extension with same name already loaded: %s', ext)
 
 
+async def finish_startup(bot):
+    '''Wait until bot is ready, then load startup extensions'''
+    logger = logging.getLogger(__name__)
+    await bot.wait_until_ready()
+
+    logger.info('Logged in as %s, id: %s', bot.user.name, bot.user.id)
+    load_extensions(bot)
+
+
+def configure_logging(config, debug):
+    '''Configure logging from dictionary and rollover RotatingFileHandlers'''
+    logging.config.dictConfig(config)
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    for handler in root_logger.handlers:
+        if isinstance(handler, RotatingFileHandler):
+            handler.doRollover()
+
+
+def start_bot(config):
+    '''Configure logging and start the bot, load start extensions when ready'''
+    configure_logging(config['~logging~'], config['-bot-']['debug'])
+    logger = logging.getLogger(__name__)
+    logger.info('Starting up bot')
+    bot = commands.Bot(
+        commands.when_mentioned_or(*config['-bot-']['command_prefixes']),
+        pm_help=True)
+
+    bot.config = config
+    bot.loop.create_task(finish_startup(bot))
+    bot.run(bot.config['-bot-']['token'])
+
+
 if __name__ == '__main__':
-    _configure_logging()
-    LOGGER = logging.getLogger(__name__)
-    LOGGER.info('Starting up bot')
-    BOT = commands.Bot(commands.when_mentioned_or(*config.COMMAND_PREFIXES),
-                       pm_help=True)
-
-    async def finish_loading():
-        'When bot is ready log and load extensions'
-        await BOT.wait_until_ready()
-        LOGGER.info('Logged in as %s, id: %s', BOT.user.name, BOT.user.id)
-        _load_extensions(BOT)
-    BOT.loop.create_task(finish_loading())
-
-    BOT.run(config.TOKEN)
+    start_bot(ConfigJSON('config.json'))

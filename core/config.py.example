@@ -6,7 +6,8 @@ ID in OWNER_ID so the bot only listens to you for volatile commands.
 '''
 import os
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..'))
 LOG_PATH = os.path.join(PROJECT_ROOT, 'log')
 
 # The token for the bot, taken from the discord application page
