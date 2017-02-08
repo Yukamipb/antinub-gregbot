@@ -1,0 +1,52 @@
+bot:
+  # The token for the bot, taken from the discord application page
+  token: 'token'
+
+  # List of command prefixes the bot will pick up on in addition to whenever
+  # it is mentioned (can be left empty to only listen for mentions)
+  command_prefixes:
+  - '!'
+
+  owner_id: 'bot owner id'
+  admins:
+  - 'admin 1 id'
+  - 'admin 2 id'
+
+  debug: false  # Extremely verbose logging when true.
+  startup_extensions:
+  - fun
+  - jabber
+  - killmails
+  - timerboard
+extensions:  # Extension specific settings
+logging:
+  formatters:
+    default:
+      format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: default
+      level: DEBUG
+    debug_file:
+      backupCount: 5
+      class: logging.handlers.RotatingFileHandler
+      encoding: utf-8
+      filename: log/debug.log
+      formatter: default
+      level: DEBUG
+      maxBytes: 1048576
+    error_file:
+      backupCount: 5
+      class: logging.handlers.RotatingFileHandler
+      encoding: utf-8
+      filename: log/error.log
+      formatter: default
+      level: ERROR
+      maxBytes: 1048576
+  root:
+    handlers:
+    - debug_file
+    - error_file
+    - console
+  version: 1

@@ -1,7 +1,7 @@
 # Project specific ignores
 _test*
 *.json
-config.py
+config.*
 
 # VS Code files
 .vscode/

@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 
 import discord.ext.commands as commands
 
-from core.configbuilder import ConfigJSON
+from core.configbuilder import ConfigYAML
 
 
 def load_extensions(bot):
@@ -19,7 +19,7 @@ def load_extensions(bot):
     bot.load_extension('core.control')
     logger.info('Successfully loaded extension: control')
 
-    for ext in bot.config['-bot-']['startup_extensions']:
+    for ext in bot.config['bot']['startup_extensions']:
         libname = 'ext.{}'.format(ext)
         if libname not in bot.extensions:
             try:
@@ -52,17 +52,17 @@ def configure_logging(config, debug):
 
 def start_bot(config):
     '''Configure logging and start the bot, load start extensions when ready'''
-    configure_logging(config['~logging~'], config['-bot-']['debug'])
+    configure_logging(config['logging'], config['bot']['debug'])
     logger = logging.getLogger(__name__)
     logger.info('Starting up bot')
     bot = commands.Bot(
-        commands.when_mentioned_or(*config['-bot-']['command_prefixes']),
+        commands.when_mentioned_or(*config['bot']['command_prefixes']),
         pm_help=True)
 
     bot.config = config
     bot.loop.create_task(finish_startup(bot))
-    bot.run(bot.config['-bot-']['token'])
+    bot.run(bot.config['bot']['token'])
 
 
 if __name__ == '__main__':
-    start_bot(ConfigJSON('config.json'))
+    start_bot(ConfigYAML('config.yaml'))
