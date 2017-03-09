@@ -184,7 +184,7 @@ class Control:
                                      plain_name)
                     await self.bot.say('Successfully loaded extension: {}'
                                        .format(plain_name))
-                except ImportError as exc:
+                except ImportError:
                     await self.bot.say('Extension not found: {}'
                                        .format(plain_name))
                 except Exception as exc:

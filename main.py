@@ -12,11 +12,16 @@ import discord.ext.commands as commands
 from core.configbuilder import ConfigYAML
 
 
-def load_extensions(bot):
+async def load_extensions(bot):
     'Load the startup extensions'
     logger = logging.getLogger(__name__)
     logger.info('Loading extensions')
-    bot.load_extension('core.control')
+    try:
+        bot.load_extension('core.control')
+    except Exception as exc:
+        logger.exception('Failed to load core extension, shutting down.')
+        await bot.logout()
+        raise exc
     logger.info('Successfully loaded extension: control')
 
     for ext in bot.config['bot']['startup_extensions']:
@@ -25,8 +30,11 @@ def load_extensions(bot):
             try:
                 bot.load_extension(libname)
                 logger.info('Successfully loaded extension: %s', ext)
-            except ImportError as exc:
-                logger.warning('Failed to load extension: %s - %s', ext, exc)
+            except ImportError:
+                logger.warning('Extension not found: %s', ext)
+            except Exception as exc:
+                logger.exception('Failed to load extension: %s', ext)
+                raise exc
         else:
             logger.warning('Extension with same name already loaded: %s', ext)
 
@@ -37,7 +45,7 @@ async def finish_startup(bot):
     await bot.wait_until_ready()
 
     logger.info('Logged in as %s, id: %s', bot.user.name, bot.user.id)
-    load_extensions(bot)
+    await load_extensions(bot)
 
 
 def configure_logging(config, debug):
@@ -60,7 +68,7 @@ def start_bot(config):
         pm_help=True)
 
     bot.config = config
-    bot.loop.create_task(finish_startup(bot))
+    fut = bot.loop.create_task(finish_startup(bot))
     bot.run(bot.config['bot']['token'])
 
 
